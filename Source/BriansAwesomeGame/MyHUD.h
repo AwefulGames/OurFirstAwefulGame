@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BoxComponent.h"
+#include "HealthParentWidget.h"
 #include "MyHUD.generated.h"
 
 UCLASS()
@@ -15,30 +16,24 @@ class BRIANSAWESOMEGAME_API AMyHUD : public AHUD
 public:
 	AMyHUD();
 	// Primary draw call for the HUD.
-	//virtual void DrawHUD() override;
+	virtual void DrawHUD() override;
 
 	virtual void BeginPlay() override;
 	//virtual void Tick(float DeltaSeconds) override;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float FullHealth;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float Health;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float HealthPercentage;
-
 	// Reference UMG Asset in the Editor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-		TSubclassOf<class UUserWidget> whealth_bar_utility;
+		TSubclassOf<class UHealthParentWidget> wBestHealthBar; 
 
 	// Variable to hold the widget After Creating it.
-	UUserWidget* MyHealthBar;
+	UHealthParentWidget* MyHealthBar;
 
 	UFUNCTION(Category = "Gameplay")
-		void UpdateHealth(float value);
+		void UpdateHUD(float hp) {
+		if (MyHealthBar) MyHealthBar->UpdateUIHealth(hp);
+	}
+
 
 		
 };

@@ -94,7 +94,8 @@ void AThirdPersonMPProjectile::BeginPlay()
 		// NOTE: do not do this in the constructor as it will play the sound when the player spawns
 		ImpactAudioComponent->SetSound(ImpactSoundCue);
 	}
-	
+
+
 }
 
 // Called every frame

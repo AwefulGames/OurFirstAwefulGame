@@ -9,8 +9,8 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/GameModeBase.h"
-
-
+#include "MyHUD.h"
+#include "HealthParentWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
 
@@ -68,6 +68,9 @@ ABriansAwesomeGameCharacter::ABriansAwesomeGameCharacter()
 	bIsFiringWeapon = false;
 
 	bReplicates = true;
+
+	ConstructorHelpers::FClassFinder<UHealthParentWidget> UIClassFinder(TEXT("WidgetBlueprint'/Game/UI_Widgets/BestHealthBar.BestHealthBar_C'"));
+	wBestHealthBar = UIClassFinder.Class;
 
 }
 
@@ -275,6 +278,8 @@ void ABriansAwesomeGameCharacter::SetCurrentHealth(float healthValue)
 		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
 		OnHealthUpdate();
 	}
+	MyHealthBar->UpdateUIHealth(float(CurrentHealth) / float(MaxHealth));
+
 }
 
 float ABriansAwesomeGameCharacter::TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -391,8 +396,6 @@ void ABriansAwesomeGameCharacter::Tick(float DeltaTime)
 
 	FVector OldAccel = GetCharacterMovement()->GetCurrentAcceleration();
 
-	FString healthMessage = FString::Printf(TEXT("OldA %f %f %f -- Forcing %f %f %f"), OldAccel.X, OldAccel.Y, OldAccel.Z, CharacterAccel.X, CharacterAccel.Y, CharacterAccel.Z);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, healthMessage);
 
 
 	LaunchVelocity = CharacterAccel * DeltaTime  + GetCharacterMovement()->GetLastUpdateVelocity();
@@ -488,4 +491,27 @@ void ABriansAwesomeGameCharacter::CameraControlPitch(float Rate)
 	AddControllerRollInput(NewRate.X);
 	AddControllerPitchInput(NewRate.Y);
 	AddControllerYawInput(NewRate.Z);
+}
+
+void ABriansAwesomeGameCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("1")));
+	if (wBestHealthBar) // Check the selected UI class is not NULL
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("2")));
+		if (!MyHealthBar) // If the widget is not created and == NULL
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("3")));
+			MyHealthBar = CreateWidget<UHealthParentWidget>(GetWorld(), wBestHealthBar); // Create Widget
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("3.5")));
+			if (!MyHealthBar)
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("4!")));
+				//return;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("5")));
+			MyHealthBar->AddToViewport(); // Add it to the viewport so the Construct() method in the UUserWidget:: is run.
+			MyHealthBar->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+
 }

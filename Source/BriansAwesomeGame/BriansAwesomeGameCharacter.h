@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "HealthParentWidget.h"
+#include "UObject/ConstructorHelpers.h"
 #include "BriansAwesomeGameCharacter.generated.h"
 
 UCLASS()
@@ -22,6 +24,7 @@ public:
 	ABriansAwesomeGameCharacter();
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -160,7 +163,16 @@ public:
 		void RollCameraAndPawnCW();
 	UFUNCTION(Category = "Gameplay")
 		void RollCameraAndPawnCCW();
+	// Reference UMG Asset in the Editor
+	// Reference UMG Asset in the Editor
+	//TSubclassOf<class UHealthParentWidget> wBestHealthBar;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+		TSubclassOf<class UHealthParentWidget> wBestHealthBar;
+
+	// The instance of the players Inventory UI Widget
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player, HUD and UI")
+		class UHealthParentWidget* MyHealthBar;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Health")

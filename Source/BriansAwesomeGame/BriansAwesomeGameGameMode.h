@@ -13,6 +13,8 @@ class ABriansAwesomeGameGameMode : public AGameModeBase
 
 public:
 	ABriansAwesomeGameGameMode();
+
+	virtual void BeginPlay() override;
 };
 
 
