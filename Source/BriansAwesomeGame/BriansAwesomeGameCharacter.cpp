@@ -15,7 +15,7 @@
 #include "Engine/Engine.h"
 
 #include "Kismet/GameplayStatics.h"
-
+#include "BriansPlayerController.h"
 
 #include "ThirdPersonMPProjectile.h"
 
@@ -69,9 +69,6 @@ ABriansAwesomeGameCharacter::ABriansAwesomeGameCharacter()
 
 	bReplicates = true;
 
-	ConstructorHelpers::FClassFinder<UHealthParentWidget> UIClassFinder(TEXT("WidgetBlueprint'/Game/UI_Widgets/BestHealthBar.BestHealthBar_C'"));
-	wBestHealthBar = UIClassFinder.Class;
-
 }
 
 
@@ -124,6 +121,7 @@ void ABriansAwesomeGameCharacter::RestartCharacter()
 
 
 	character_rotator = FRotator(0.0f, 0.0f, 0.0f);
+
 }
 
 
@@ -237,9 +235,13 @@ void ABriansAwesomeGameCharacter::MoveRight(float Value)
 
 void ABriansAwesomeGameCharacter::OnHealthUpdate()
 {
+
+	
 	//Client-specific functionality
 	if (IsLocallyControlled())
 	{
+		GetController<ABriansPlayerController>()->UpdateHealth(float(CurrentHealth) / float(MaxHealth));
+
 		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHealth);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
@@ -250,6 +252,8 @@ void ABriansAwesomeGameCharacter::OnHealthUpdate()
 			PlayerDied();
 			respawn = true;
 		}
+ 
+		
 	}
 
 	//Server-specific functionality
@@ -278,7 +282,7 @@ void ABriansAwesomeGameCharacter::SetCurrentHealth(float healthValue)
 		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
 		OnHealthUpdate();
 	}
-	MyHealthBar->UpdateUIHealth(float(CurrentHealth) / float(MaxHealth));
+	
 
 }
 
@@ -394,12 +398,6 @@ void ABriansAwesomeGameCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector OldAccel = GetCharacterMovement()->GetCurrentAcceleration();
-
-
-
-	LaunchVelocity = CharacterAccel * DeltaTime  + GetCharacterMovement()->GetLastUpdateVelocity();
-	ABriansAwesomeGameCharacter::LaunchCharacter(LaunchVelocity, true, true);
 
 	if (respawn) {
 		respawn_counter+=DeltaTime;
@@ -437,6 +435,7 @@ void ABriansAwesomeGameCharacter::RespawnOurGuy_Implementation(AController * con
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	// possess our new actor
 	SavedController->Possess(Cast<ABriansAwesomeGameCharacter>(NewActor));
+	
 }
 	
 void ABriansAwesomeGameCharacter::RollCameraAndPawn(float rotation_amount) {
@@ -447,13 +446,6 @@ void ABriansAwesomeGameCharacter::RollCameraAndPawn(float rotation_amount) {
 	FRotator NewRotation = GetActorRotation() + FRotator(0, 0, rotation_amount);
 
 	SetActorRotation(NewRotation);
-
-	float mass = 88.8; // Kg
-	float accel = 1; // g
-
-	FVector NewAccel = FVector(0, 0, accel);
-
-	CharacterAccel = character_rotator.RotateVector(NewAccel);
 
 }
 
@@ -496,22 +488,6 @@ void ABriansAwesomeGameCharacter::CameraControlPitch(float Rate)
 void ABriansAwesomeGameCharacter::BeginPlay() {
 	Super::BeginPlay();
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("1")));
-	if (wBestHealthBar) // Check the selected UI class is not NULL
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("2")));
-		if (!MyHealthBar) // If the widget is not created and == NULL
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("3")));
-			MyHealthBar = CreateWidget<UHealthParentWidget>(GetWorld(), wBestHealthBar); // Create Widget
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("3.5")));
-			if (!MyHealthBar)
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("4!")));
-				//return;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("5")));
-			MyHealthBar->AddToViewport(); // Add it to the viewport so the Construct() method in the UUserWidget:: is run.
-			MyHealthBar->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
+	if (IsLocallyControlled()) GetController<ABriansPlayerController>()->UpdateHealth(float(CurrentHealth) / float(MaxHealth));
 
 }

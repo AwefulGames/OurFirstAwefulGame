@@ -4,6 +4,7 @@
 #include "BriansAwesomeGameCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Engine.h"
+#include "BriansPlayerController.h"
 
 ABriansAwesomeGameGameMode::ABriansAwesomeGameGameMode() : Super()
 {
@@ -17,6 +18,7 @@ ABriansAwesomeGameGameMode::ABriansAwesomeGameGameMode() : Super()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+		PlayerControllerClass = ABriansPlayerController::StaticClass();
 	}
 }
 
